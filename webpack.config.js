@@ -1,7 +1,3 @@
-/**
- * Created by jwqin on 11/15/15.
- */
-
 module.exports = {
   entry: [
     './src/index.js'
