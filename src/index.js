@@ -43,7 +43,6 @@ function createAsyncAction(type, payloadCreator, metaCreator) {
   const startAction = createAction(type);
   const completeAction = createAction(`${type}_${ASYNC_PHASES.COMPLETED}`);
   const failedAction = createAction(`${type}_${ASYNC_PHASES.FAILED}`);
-
   return initPayload => {
     return dispatch => {
       dispatch(
@@ -67,8 +66,60 @@ function createAsyncAction(type, payloadCreator, metaCreator) {
   };
 }
 
+function ActionHandler() {
+  this.currentAction = undefined;
+  this.handlers = {};
+}
+
+ActionHandler.prototype = {
+  when(actionType, handler) {
+    if (Array.isArray(actionType)) {
+      this.currentAction = undefined;
+      Array.forEach((index, type) => {
+        this.handlers[type] = handler;
+      })
+    } else {
+      this.currentAction = actionType;
+      this.handlers[actionType] = handler;
+    }
+    return this;
+  },
+  done(handler) {
+    this._guardDoneAndFailed();
+    this.handlers[`${this.currentAction}_${ASYNC_PHASES.COMPLETED}`] = handler;
+    return this;
+  },
+  failed(handler) {
+    this._guardDoneAndFailed();
+    this.handlers[`${this.currentAction}_${ASYNC_PHASES.FAILED}`] = handler;
+    return this;
+  },
+  build(initValue = null) {
+    return (state = initValue, action) => {
+      const handler = this.handlers[action.type];
+
+      if (typeof handler === 'function') {
+        return handler(state, action);
+      }
+
+      return state;
+    };
+  },
+  _guardDoneAndFailed() {
+    if (!this.currentAction) {
+      throw new Error(
+        'Method "done" & "failed" must follow the "when(action, ?handler)", and "action" should not be an array'
+      );
+    }
+  }
+};
+
+function getReducerForActions() {
+  return new ActionHandler();
+}
 
 export {
   createAction,
-  createAsyncAction
+  createAsyncAction,
+  getReducerForActions
 }
