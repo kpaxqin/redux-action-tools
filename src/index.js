@@ -29,6 +29,17 @@ function createAction (type, payloadCreator, metaCreator) {
   };
 }
 
+function createActions(actionConfigs) {
+  const actions = {};
+  for (let key in actionConfigs) {
+    if (Object.prototype.hasOwnProperty.call(actionConfigs, key)) {
+      const config = actionConfigs[key];
+      actions[key] = createAction(key, config.payload, config.meta)
+    }
+  }
+  return actions;
+}
+
 function getAsyncMetaCreator(metaCreator) {
   return typeof metaCreator === 'function'
     ? metaCreator
@@ -120,6 +131,7 @@ function getReducerForActions() {
 
 export {
   createAction,
+  createActions,
   createAsyncAction,
   getReducerForActions
 }
