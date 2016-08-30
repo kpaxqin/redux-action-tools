@@ -1,0 +1,3 @@
+--compilers js:babel-register,jsx:babel-register
+--recursive
+--ui bdd

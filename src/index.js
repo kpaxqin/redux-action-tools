@@ -7,22 +7,28 @@ const ASYNC_PHASES = {
 const identity = id => id;
 
 function createAction (type, payloadCreator, metaCreator) {
-  return payload => {
+  const finalActionCreator = typeof payloadCreator === 'function'
+    ? payloadCreator
+    : identity;
+  return (payload, meta) => {
     const action = {
-      type,
-      payload: typeof payloadCreator === 'function'
-        ? payloadCreator(payload)
-        : identity(payload)
+      type
     };
 
-    if (payload instanceof Error) {
+    const isError = payload instanceof Error;
+
+    if (payload !== undefined && payload !== null) {
+      action.payload = isError ? payload : finalActionCreator(payload);
+    }
+
+    if (isError) {
       action.error = true;
     }
 
     if (metaCreator) {
       action.meta = typeof metaCreator === 'function'
-        ? metaCreator(payload)
-        : metaCreator;
+        ? metaCreator(payload, meta)
+        : meta;
     }
 
     return action;
