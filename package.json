@@ -1,0 +1,26 @@
+{
+  "name": "redux-action-tools",
+  "version": "1.0.0",
+  "description": "redux action tools with full async support inspired by redux-action",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "webpack",
+    "test": "npm run test"
+  },
+  "keywords": [
+    "redux",
+    "action",
+    "async",
+    "promise"
+  ],
+  "author": "kpaxqin",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.9.0",
+    "babel-eslint": "^6.1.2",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.9.0",
+    "webpack": "^1.12.6",
+    "rimraf": "^2.5.4"
+  }
+}
