@@ -40,26 +40,30 @@ function createActions(actionConfigs) {
   for (let key in actionConfigs) {
     if (Object.prototype.hasOwnProperty.call(actionConfigs, key)) {
       const config = actionConfigs[key];
-      actions[key] = createAction(key, config.payload, config.meta)
+
+      if (typeof config === 'function') {
+        actions[key] = createAction(type, config);
+      } else {
+        actions[key] = createAction(key, config.payload, config.meta)
+      }
     }
   }
   return actions;
 }
 
-function getAsyncMetaCreator(metaCreator) {
-  return typeof metaCreator === 'function'
-    ? metaCreator
-    : (payload, asyncPhase) => ({asyncPhase, ...metaCreator});
-}
-
 function getAsyncMeta(metaCreator, payload, asyncPhase) {
-  return getAsyncMetaCreator(metaCreator)(payload, asyncPhase);
+  const asyncMetaCreator = typeof metaCreator === 'function'
+    ? metaCreator
+    : (payload, defaultMeta) => ({...defaultMeta, ...metaCreator});
+
+  return asyncMetaCreator(payload, {asyncPhase});
 }
 
 function createAsyncAction(type, payloadCreator, metaCreator) {
-  const startAction = createAction(type);
-  const completeAction = createAction(`${type}_${ASYNC_PHASES.COMPLETED}`);
-  const failedAction = createAction(`${type}_${ASYNC_PHASES.FAILED}`);
+  const startAction = createAction(type, identity, (_, meta) => meta);
+  const completeAction = createAction(`${type}_${ASYNC_PHASES.COMPLETED}`, identity, (_, meta) => meta);
+  const failedAction = createAction(`${type}_${ASYNC_PHASES.FAILED}`, identity, (_, meta) => meta);
+
   return initPayload => {
     return dispatch => {
       dispatch(
@@ -139,5 +143,6 @@ export {
   createAction,
   createActions,
   createAsyncAction,
-  getReducerForActions
+  getReducerForActions,
+  ASYNC_PHASES
 }
