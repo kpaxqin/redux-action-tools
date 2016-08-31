@@ -11,7 +11,9 @@
     "redux",
     "action",
     "async",
-    "promise"
+    "promise",
+    "flux",
+    "fsa"
   ],
   "author": "kpaxqin",
   "license": "ISC",
