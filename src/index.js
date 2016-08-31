@@ -77,11 +77,11 @@ function createAsyncAction(type, payloadCreator, metaCreator) {
           dispatch(
             completeAction(value, getAsyncMeta(metaCreator, value, ASYNC_PHASES.COMPLETED))
           );
-        }).catch(e => {
+        }, e => {
           dispatch(
             failedAction(e, getAsyncMeta(metaCreator, e, ASYNC_PHASES.FAILED))
           );
-        })
+        });
       }
     }
   };

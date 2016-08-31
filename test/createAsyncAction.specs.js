@@ -144,6 +144,31 @@ describe('createAsyncAction', () => {
     })
 
   });
+
+  context('when error occurs while dispatching the action for promise resolved', () => {
+    it('should not call dispatch for the error', (done) => {
+      const actionCreator = createAsyncAction(type, createPromisePayload);
+      const syncPayload = {foo: 1};
+      const thunk = actionCreator(syncPayload);
+
+      dispatch = sinon.spy(function() {
+        if (dispatch.callCount === 2) { // throw error for the promise resolve action
+          process.nextTick(() => {
+            try{
+              expect(dispatch.callCount).to.equal(2);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          });
+
+          throw new Error('dispatch error')
+        }
+      });
+
+      invokeThunk(thunk);
+    });
+  })
 });
 
 function createPromisePayload(result) {
