@@ -52,9 +52,9 @@ The core idea here is the different action for completed or failed should have t
 With first action you can do optimistic update easily, and `meta.asyncPhase` enables you to intercept sync action or api failure in middleware, the example is WIP
 
 
- ### createReducer
+### createReducer
 
-Write 'XX_COMPLETED', 'XX_FAILED' in reducer is awful? Here comes `createReducer`!
+Write *'XX_COMPLETED'*, *'XX_FAILED'* in reducer is awful? Here comes `createReducer`!
 
 This function is super easy just check example:
 
