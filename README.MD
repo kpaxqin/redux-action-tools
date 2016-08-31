@@ -2,6 +2,8 @@
 
 This lib is inspired by `redux-actions` and the `redux-promise-thunk`
 
+[中文版README](https://github.com/kpaxqin/redux-action-tools/blob/master/README_zh_CN.MD)
+
 ## Install
 `npm i redux-action-tools`
 

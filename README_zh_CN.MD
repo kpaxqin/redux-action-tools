@@ -53,7 +53,7 @@ class TodoItem extends Component {
 
 上表中第一个action是同步的且一定会被触发。第二三个分别对应promise的成功与失败。
 
-社区中有一些方案是完全使用meta代表异步action的不同阶段。然而个人认为不同的action应该由type区分，meta只应对action做元数据级的描述。
+>社区中有一些方案是完全使用meta代表异步action的不同阶段。然而个人认为不同的action应该由type区分，meta只应对action做元数据级的描述。
 这种基于type的区分不仅更加清晰，也更加接近redux的启蒙——Elm中的做法。
 
 #### 乐观更新
@@ -122,7 +122,6 @@ const requestWithoutLoadingSpinner = createAsyncAction(type, promiseCreator, (pa
    .build(initValue); // 不要忘了调用build函数! 初始值是可选的，但强烈建议你提供初始值
  ```
 
- The `done` and `failed` method can only follow with `when(action)`, so examples below are INVALID and will throw an error:
 上述写法既避免了`switch-case`语句，又对异步action的处理提供了一致的抽象：
 上例中你只需要声明"BAZ"这一个action即可，**没有多余的字符串与action**
 
