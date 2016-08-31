@@ -1,5 +1,5 @@
-import {expect} from 'chai';
-import {createAction} from '../src/index';
+import { expect } from 'chai';
+import { createAction } from '../src/index';
 import { isFSA } from 'flux-standard-action';
 
 

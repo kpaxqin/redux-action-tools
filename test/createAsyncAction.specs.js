@@ -3,9 +3,7 @@ import sinon from 'sinon';
 import { isFSA } from 'flux-standard-action';
 import { createAsyncAction, ASYNC_PHASES } from '../src/index';
 
-const sandbox = sinon.sandbox.create();
-
-describe.only('createAsyncAction', () => {
+describe('createAsyncAction', () => {
   let dispatch;
   const type = "ACTION";
 

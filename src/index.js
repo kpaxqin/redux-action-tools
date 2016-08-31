@@ -96,7 +96,7 @@ ActionHandler.prototype = {
   when(actionType, handler) {
     if (Array.isArray(actionType)) {
       this.currentAction = undefined;
-      Array.forEach((index, type) => {
+      actionType.forEach((type) => {
         this.handlers[type] = handler;
       })
     } else {
@@ -117,7 +117,7 @@ ActionHandler.prototype = {
   },
   build(initValue = null) {
     return (state = initValue, action) => {
-      const handler = this.handlers[action.type];
+      const handler = action ? this.handlers[action.type] : undefined;
 
       if (typeof handler === 'function') {
         return handler(state, action);
@@ -135,7 +135,7 @@ ActionHandler.prototype = {
   }
 };
 
-function getReducerForActions() {
+function createReducer() {
   return new ActionHandler();
 }
 
@@ -143,6 +143,6 @@ export {
   createAction,
   createActions,
   createAsyncAction,
-  getReducerForActions,
+  createReducer,
   ASYNC_PHASES
 }
