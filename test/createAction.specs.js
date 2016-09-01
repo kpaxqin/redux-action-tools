@@ -135,6 +135,19 @@ describe('createAction()', () => {
         meta: { foo: 'bar' }
       });
     });
+
+    it('should set error to true if payloadCreator returns an Error', () => {
+      const errObj = new TypeError('this is an error');
+      const actionCreator = createAction(type, () => errObj);
+
+      const errAction = actionCreator({});
+      expect(errAction).to.deep.equal({
+        type,
+        payload: errObj,
+        error: true
+      });
+    });
+
   });
 });
 

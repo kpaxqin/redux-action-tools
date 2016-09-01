@@ -15,13 +15,13 @@ function createAction (type, payloadCreator, metaCreator) {
       type
     };
 
-    const isError = payload instanceof Error;
-
     if (payload !== undefined && payload !== null) {
-      action.payload = isError ? payload : finalActionCreator(payload);
+      action.payload = payload instanceof Error
+        ? payload
+        : finalActionCreator(payload);
     }
 
-    if (isError) {
+    if (action.payload instanceof Error) {
       action.error = true;
     }
 
