@@ -1,47 +1,46 @@
 # redux-action-tools
 
-This lib is inspired by `redux-actions` and the `redux-promise-thunk`
+Light-weight action tools with async and optimistic update support.
 
-[中文版README](https://github.com/kpaxqin/redux-action-tools/blob/master/README_zh_CN.MD)
+> This project is inspired by `redux-actions` and `redux-promise-thunk`
 
 ## Install
 `npm i redux-action-tools`
 
-## Usage
+## Usage and APIs
 
 ### createAction(actionName, payloadCreator [, metaCreator])
 
-The same as `createAction` in `redux-actions`;
+Same as [createAction](https://github.com/acdlite/redux-actions#createactiontype-payloadcreator--identity-metacreator) in `redux-actions`, we write our own for less dependency and fix some defects.
 
 ### createAsyncAction(actionName, promiseCreator [, metaCreator])
 
-**You will need to use `redux-thunk` as middleware to make this function work**.
+**This function is relly on `redux-thunk`**.
 
-The `createAction` will return an action creator which creates pain action object, while this function will return a action creator for `thunk`
+The `createAction` returns an action creator for pain action object, While `createAsyncAction` will return an action creator for `thunk`.
 
-And instead of payloadCreator, you need to pass a `promiseCreator` which returns a promise object.
+The second parameter -- `promiseCreator` should be a function returns a promise object.
 
-See examples below:
+Check example below:
 
 ```js
-//editTodo is a thunk
-const editTodo = createPromiseThunk('EDIT_TODO', function(todo) {
-  return todoApi.edit(todo); //todoApi.edit() should return a Promise object;
+const editTodo = createPromiseThunk('EDIT_TODO', function(todo) { // only one argument here
+  return todoApi.edit(todo); //should return a Promise object;
 });
 
 //TodoItem.jsx
-const {editTodo} = bindActionCreators(actions, dispatch);
 
 class TodoItem extends Component {
   //...
   handleEdit(todo) {
-    editTodo(todo);//only one parameter is allowed, and will be passed to promiseCreator;
+    // editTodo can only been called with one parameter, and it will be passed to the promiseCreator
+    dispatch(editTodo(todo));
   }
   //...
 }
 ```
 
-The thunk function will dispatch following flux standard actions(FSA) for the promise you returned in promiseCreator:
+After you dispatch the async action, following flux standard action might been triggered:
 
 |     type           | When         |  payload  | meta.asyncPhase    |
 | --------           |  -----      | :----:    | :----:  |
@@ -49,40 +48,98 @@ The thunk function will dispatch following flux standard actions(FSA) for the pr
 | `${actionName}_COMPLETED` | promise resolved | value of promise | 'COMPLETED' |
 | `${actionName}_FAILED` | promise rejected | reason of promise | 'FAILED' |
 
-The core idea here is the different action for completed or failed should have there own type, this make things more clear and closer to what we do in `Elm`.
 
-With first action you can do optimistic update easily, and `meta.asyncPhase` enables you to intercept sync action or api failure in middleware, the example is WIP
+> Idea here is that we should use different type, rather than just meta, to identity the different action during an async process. This will be more clear and close to `Elm`
+
+#### Optimistic update
+
+Since we have an action triggered before async behaviour, its easy to support optimistic update.
+
+#### meta.asyncPhase and middleware
+
+We use `meta.asyncPhase` to identity the different phase.
+You can use it with middleware to handle features like global loading spinner or common error handler:
+
+```js
+import _ from 'lodash'
+import { ASYNC_PHASES } from 'redux-action-tools'
+
+function loadingMiddleWare({dispatch}) {
+  return next => action => {
+    const asyncStep = _.get(action, 'meta.asyncStep');
+    const omitLoading = _.get(action, 'meta.omitLoading');
+
+    if (omitLoading) return;
+
+    if (asyncStep === ASYNC_PHASES.START) {
+      dispatch({ // Enable the loading spinner
+        type: 'ASYNC_STARTED',
+        payload: {
+          action
+        }
+      })
+    } else if (asyncStep === ASYNC_PHASES.COMPLETED || asyncStep === ASYNC_PHASES.FAILED) {
+      dispatch({ // Disable the loading spinner
+        type: 'ASYNC_ENDED',
+        payload: {
+          action
+        }
+      })
+    }
+    next(action);
+  }
+}
+
+```
+
+And with metaCreator, you can change the meta object and skip the common process:
+
+```js
+const requestWithoutLoadingSpinner = createAsyncAction(type, promiseCreator, (payload, defaultMeta) => {
+  return { ...defaultMeta, omitLoading: true };
+})
+```
 
 
 ### createReducer
 
-Write *'XX_COMPLETED'*, *'XX_FAILED'* in reducer is awful? Here comes `createReducer`!
+But, writing things like *XXX_COMPLETED*, *XXX_FAILED* is awful !!
 
-This function is super easy just check example:
+And this is why we build the `createReducer`!
 
  ```js
 
  const handler = (state, action) => newState
 
  const reducer = createReducer()
-   .when([ACTION_FOO, ACTION_BAR], handlerForBothActions)
-   .when('BAZ', handler) // you can do optimistic update here, and it's ok to omit the handler if you want
-   .done(handler) //handle 'BAZ_COMPLETED'
-   .failed(errorHandler) //handle 'BAZ_FAILED'
-   .build(initValue); // DON'T FORGET !
+   .when([ACTION_FOO, ACTION_BAR], handlerForBothActions) // share handler for multi actions
+   .when('BAZ', handler) // optimistic update here if you need
+   .done(handler) // handle 'BAZ_COMPLETED'
+   .failed(errorHandler) // handle 'BAZ_FAILED'
+   .build(initValue); // Don't forget 'build()' !
+
+
+ const reducer = createReducer()
+   .when(FOO)     // no optimistic update here, just declare the parent action for .done & .failed
+   .done(handler) //
  ```
 
- The `done` and `failed` method can only follow with `when(action)`, so examples below are INVALID and will throw an error:
+With `createReducer`, we can skip the switch-case statement which lots of people don't like it.
+And more important, we provide a common and semantic way to handle the async behaviour.
+
+The only thing you need to notice, is there are some limitations when you use `.done` and `.failed`.
+
+The following code will throw error:
 
  ```js
 
  reducer = createReducer()
-   .done(handler) // throw error here, cuz we don't know handle the success of which async action
+   .done(handler) // throw error here, cuz we don't know which action to handle
    .build()
 
  reducer = createReducer()
    .when([A, B])
-   .done(handler) // throw error here, same reason since we don't know which one you want
+   .done(handler) // throw error here, same reason since we don't know which one you mean
 
  ```
 
