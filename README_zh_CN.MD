@@ -18,7 +18,6 @@
 
 **此方法依赖redux-thunk中间件才能正常工作**.
 
-The `createAction` will return an action creator which creates pain action object, while this function will return a action creator for `thunk`
 `createAction`方法本质上返回了一个创建纯action对象的action creator方法。
 而为了处理异步，`createAsyncAction`返回的是一个创建**thunk**的action creator。借助`redux-thunk`对thunk的处理以实现异步。
 
