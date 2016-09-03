@@ -49,15 +49,15 @@ After you dispatch the async action, following flux standard action might been t
 | `${actionName}_FAILED` | promise rejected | reason of promise | 'FAILED' |
 
 
-> Idea here is that we should use different type, rather than just meta, to identity the different action during an async process. This will be more clear and close to `Elm`
+> Idea here is that we should use different type, rather than just meta, to identity different actions during an async process. This will be more clear and closer to what we do in`Elm`
 
 #### Optimistic update
 
-Since we have an action triggered before async behaviour, its easy to support optimistic update.
+Since the first action will be triggered before async behaviour, its easy to support optimistic update.
 
 #### meta.asyncPhase and middleware
 
-We use `meta.asyncPhase` to identity the different phase.
+We use `meta.asyncPhase` to identity different phases.
 You can use it with middleware to handle features like global loading spinner or common error handler:
 
 ```js
@@ -69,23 +69,15 @@ function loadingMiddleWare({dispatch}) {
     const asyncStep = _.get(action, 'meta.asyncStep');
     const omitLoading = _.get(action, 'meta.omitLoading');
 
-    if (omitLoading) return;
+    if (!asyncStep || omitLoading) return;
 
-    if (asyncStep === ASYNC_PHASES.START) {
-      dispatch({ // Enable the loading spinner
-        type: 'ASYNC_STARTED',
-        payload: {
-          action
-        }
-      })
-    } else if (asyncStep === ASYNC_PHASES.COMPLETED || asyncStep === ASYNC_PHASES.FAILED) {
-      dispatch({ // Disable the loading spinner
-        type: 'ASYNC_ENDED',
-        payload: {
-          action
-        }
-      })
-    }
+    dispatch({
+      type: asyncStep === ASYNC_PHASES.START ? 'ASYNC_STARTED' : 'ASYNC_ENDED',
+      payload: {
+        action
+      }
+    })
+
     next(action);
   }
 }
@@ -127,9 +119,7 @@ And this is why we build the `createReducer`!
 With `createReducer`, we can skip the switch-case statement which lots of people don't like it.
 And more important, we provide a common and semantic way to handle the async behaviour.
 
-The only thing you need to notice, is there are some limitations when you use `.done` and `.failed`.
-
-The following code will throw error:
+However, there are some limitations you should know when you use `.done` and `.failed`:
 
  ```js
 

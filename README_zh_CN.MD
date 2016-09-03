@@ -70,24 +70,16 @@ function loadingMiddleWare({dispatch}) {
   return next => action => {
     const asyncStep = _.get(action, 'meta.asyncStep');
     const omitLoading = _.get(action, 'meta.omitLoading');
-    
-    if (omitLoading) return;
-    
-    if (asyncStep === ASYNC_PHASES.START) {
-      dispatch({ // This action will enable the loading spinner
-        type: 'ASYNC_STARTED',
-        payload: {
-          action
-        }
-      })
-    } else if (asyncStep === ASYNC_PHASES.COMPLETED || asyncStep === ASYNC_PHASES.FAILED) {
-      dispatch({ // This action will disable the loading spinner
-        type: 'ASYNC_ENDED',
-        payload: {
-          action
-        }
-      })
-    }
+
+    if (!asyncStep || omitLoading) return;
+
+    dispatch({
+      type: asyncStep === ASYNC_PHASES.START ? 'ASYNC_STARTED' : 'ASYNC_ENDED',
+      payload: {
+        action
+      }
+    })
+
     next(action);
   }
 }
