@@ -136,6 +136,10 @@ describe('createAction()', () => {
       });
     });
 
+    /*
+    * Customized tests below
+    * */
+
     it('should set error to true if payloadCreator returns an Error', () => {
       const errObj = new TypeError('this is an error');
       const actionCreator = createAction(type, () => errObj);
@@ -145,6 +149,14 @@ describe('createAction()', () => {
         type,
         payload: errObj,
         error: true
+      });
+    });
+
+    it('should accept multi params', () => {
+      const actionCreator = createAction(type, (foo, bar) => (foo + bar));
+      expect(actionCreator(1, 2)).to.deep.equal({
+        type,
+        payload: 3
       });
     });
 

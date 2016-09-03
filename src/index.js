@@ -10,25 +10,23 @@ function createAction (type, payloadCreator, metaCreator) {
   const finalActionCreator = typeof payloadCreator === 'function'
     ? payloadCreator
     : identity;
-  return (payload, meta) => {
+  return (...args) => {
     const action = {
       type
     };
 
-    if (payload !== undefined && payload !== null) {
-      action.payload = payload instanceof Error
-        ? payload
-        : finalActionCreator(payload);
+    if (args[0] !== undefined && args[0] !== null) {
+      action.payload = args[0] instanceof Error
+        ? args[0]
+        : finalActionCreator(...args);
     }
 
     if (action.payload instanceof Error) {
       action.error = true;
     }
 
-    if (metaCreator) {
-      action.meta = typeof metaCreator === 'function'
-        ? metaCreator(payload, meta)
-        : meta;
+    if (typeof metaCreator === 'function') {
+      action.meta = metaCreator(...args);
     }
 
     return action;
