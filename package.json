@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "webpack",
-    "test": "mocha"
+    "test": "mocha",
+    "test:coverage": "rimraf ./coverage && istanbul cover ./node_modules/.bin/_mocha"
   },
   "keywords": [
     "redux",
@@ -25,6 +26,7 @@
     "babel-preset-stage-1": "^6.5.0",
     "chai": "^3.5.0",
     "flux-standard-action": "^0.6.1",
+    "istanbul": "^1.1.0-alpha.1",
     "mocha": "^3.0.2",
     "rimraf": "^2.5.4",
     "sinon": "^1.17.5",
