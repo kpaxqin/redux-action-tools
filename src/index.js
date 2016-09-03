@@ -1,3 +1,5 @@
+import camelCase from 'camelcase';
+
 const ASYNC_PHASES = {
   START: 'START',
   COMPLETED: 'COMPLETED',
@@ -35,14 +37,16 @@ function createAction (type, payloadCreator, metaCreator) {
 
 function createActions(actionConfigs) {
   const actions = {};
-  for (let key in actionConfigs) {
-    if (Object.prototype.hasOwnProperty.call(actionConfigs, key)) {
-      const config = actionConfigs[key];
+  for (let type in actionConfigs) { //use for-in instead of reduce
+    if (Object.prototype.hasOwnProperty.call(actionConfigs, type)) {
+      const config = actionConfigs[type];
+      const actionName = camelCase(type);
 
       if (typeof config === 'function') {
-        actions[key] = createAction(type, config);
+        actions[actionName] = createAction(type, config);
       } else {
-        actions[key] = createAction(key, config.payload, config.meta)
+        const { payload, meta } = config || {};
+        actions[actionName] = createAction(type, payload, meta)
       }
     }
   }
