@@ -4,7 +4,9 @@ module.exports = {
   ],
   output: {
     path: 'lib/',
-    filename: 'index.js'
+    filename: 'index.js',
+    library: 'redux-action-tools',
+    libraryTarget: 'umd'
   },
   module: {
     loaders: [{
