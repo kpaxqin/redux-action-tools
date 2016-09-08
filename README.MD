@@ -1,13 +1,13 @@
 # redux-action-tools
 
-=====
-
 [![Build Status](https://travis-ci.org/kpaxqin/redux-action-tools.svg?branch=master)](https://travis-ci.org/kpaxqin/redux-action-tools)
 [![Coverage Status](https://coveralls.io/repos/github/kpaxqin/redux-action-tools/badge.svg?branch=master)](https://coveralls.io/github/kpaxqin/redux-action-tools?branch=master)
 
 Light-weight action tools with async and optimistic update support.
 
 > This project is inspired by `redux-actions` and `redux-promise-thunk`
+
+[中文文档](https://github.com/kpaxqin/redux-action-tools/blob/master/README_zh_CN.MD)
 
 ## Install
 `npm i redux-action-tools`
@@ -29,7 +29,7 @@ The second parameter -- `promiseCreator` should be a function returns a promise 
 Check example below:
 
 ```js
-const editTodo = createPromiseThunk('EDIT_TODO', function(todo) { // only one argument here
+const editTodo = createAsyncAction('EDIT_TODO', function(todo) { // only one argument here
   return todoApi.edit(todo); //should return a Promise object;
 });
 

@@ -1,12 +1,16 @@
 {
   "name": "redux-action-tools",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "redux action tools with full async support inspired by redux-action",
   "main": "lib/index.js",
   "scripts": {
     "build": "webpack",
     "test": "mocha",
     "test:coverage": "rimraf ./coverage && istanbul cover ./node_modules/.bin/_mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kpaxqin/redux-action-tools"
   },
   "keywords": [
     "redux",

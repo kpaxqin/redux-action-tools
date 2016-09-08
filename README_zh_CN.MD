@@ -27,7 +27,7 @@
 
 ```js
 //editTodo方法是一个返回thunk的action creator, 注意promiseCreator只能接受一个参数
-const editTodo = createPromiseThunk('EDIT_TODO', function(todo) {
+const editTodo = createAsyncAction('EDIT_TODO', function(todo) {
   return todoApi.edit(todo); //todoApi.edit() should return a Promise object;
 });
 
