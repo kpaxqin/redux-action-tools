@@ -3,10 +3,15 @@
   "version": "1.0.3",
   "description": "redux action tools with full async support inspired by redux-action",
   "main": "lib/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
   "scripts": {
     "build": "webpack",
     "test": "mocha",
-    "test:coverage": "rimraf ./coverage && istanbul cover ./node_modules/.bin/_mocha"
+    "test:coverage": "rimraf ./coverage && istanbul cover ./node_modules/.bin/_mocha",
+    "prepublish": "rimraf ./lib && npm run test && npm run build"
   },
   "repository": {
     "type": "git",
