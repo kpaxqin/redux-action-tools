@@ -66,13 +66,13 @@ function createAsyncAction(type, payloadCreator, metaCreator) {
   const completeAction = createAction(`${type}_${ASYNC_PHASES.COMPLETED}`, identity, (_, meta) => meta);
   const failedAction = createAction(`${type}_${ASYNC_PHASES.FAILED}`, identity, (_, meta) => meta);
 
-  return initPayload => {
+  return syncPayload => {
     return (dispatch, getState) => {
       dispatch(
-        startAction(initPayload, getAsyncMeta(metaCreator, initPayload, ASYNC_PHASES.START))
+        startAction(syncPayload, getAsyncMeta(metaCreator, syncPayload, ASYNC_PHASES.START))
       );
 
-      const promise = payloadCreator(initPayload, dispatch, getState);
+      const promise = payloadCreator(syncPayload, dispatch, getState);
 
       if (promise && typeof promise.then === 'function') {
         promise.then(value => {
