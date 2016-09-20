@@ -4,11 +4,11 @@ import { isFSA } from 'flux-standard-action';
 import { createAsyncAction, ASYNC_PHASES } from '../src/index';
 
 describe('createAsyncAction', () => {
-  let dispatch;
+  let dispatch, getState;
   const type = "ACTION";
 
   function invokeThunk (thunk) {
-    thunk(dispatch);
+    thunk(dispatch, getState);
   }
 
   function setDispatchForAsyncCase(assertion, done) {
@@ -28,6 +28,7 @@ describe('createAsyncAction', () => {
   context('when action triggered', () => {
     beforeEach(() => {
       dispatch = sinon.spy();
+      getState = sinon.spy();
     });
 
     it('dispatch a FSA action immediately when action triggered', () => {
@@ -63,6 +64,17 @@ describe('createAsyncAction', () => {
         foo: 2
       })
     });
+
+    it('should call promiseCreator with dispatch and getState as second & third arguments', () => {
+      const actionCreator = createAsyncAction(type, (payload, second, third) => {
+        expect(second).to.equal(dispatch);
+        expect(third).to.equal(getState);
+      });
+
+      const syncPayload = {foo: 2};
+      const thunk = actionCreator(syncPayload);
+      invokeThunk(thunk);
+    })
   });
 
   context('when promise resolved', () => {
