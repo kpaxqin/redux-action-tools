@@ -24,24 +24,36 @@ Same as [createAction](https://github.com/acdlite/redux-actions#createactiontype
 
 The `createAction` returns an action creator for pain action object, While `createAsyncAction` will return an action creator for `thunk`.
 
-The second parameter -- `promiseCreator` should be a function returns a promise object.
+#### promiseCreator(syncPayload, dispatch, getState)
 
-Check example below:
+*This function should return a promise object.*
+
+The action creator returned by `createAsyncAction` receives one parameter -- the sync payload, we will dispatch a sync action same as `createAction`. And then, call the promiseCreator for the async behaviour, dispatch action for the result of it.
+
+The `dispatch` and `getState` is the same as a normal thunk action, enables you to customize your async behaviour, even dispatch other actions.
+
+Simple example below:
 
 ```js
-const editTodo = createAsyncAction('EDIT_TODO', function(todo) { // only one argument here
-  return todoApi.edit(todo); //should return a Promise object;
+const asyncAction = createAsyncAction('ASYNC', function (syncPayload, dispatch, getState) {
+  const user = getState().user;
+
+  return asyncApi(syncPayload, user)
+    .then((result) => {
+      dispatch(otherAction(result));
+
+      return result; // don't forget to return a result.
+    })
 });
 
-//TodoItem.jsx
+//In your component
 
-class TodoItem extends Component {
+class Foo extends Component {
   //...
-  handleEdit(todo) {
-    // editTodo can only been called with one parameter, and it will be passed to the promiseCreator
-    dispatch(editTodo(todo));
+  doAsync() {
+    // You don't need dispatch here if you're using bindActionCreators
+    dispatch(asyncAction(syncPayload));
   }
-  //...
 }
 ```
 
@@ -49,7 +61,7 @@ After you dispatch the async action, following flux standard action might been t
 
 |     type           | When         |  payload  | meta.asyncPhase    |
 | --------           |  -----      | :----:    | :----:  |
-| `${actionName}` | before promiseCreator been called | first argument of promiseCreator | 'START' |
+| `${actionName}` | before promiseCreator been called | sync payload | 'START' |
 | `${actionName}_COMPLETED` | promise resolved | value of promise | 'COMPLETED' |
 | `${actionName}_FAILED` | promise rejected | reason of promise | 'FAILED' |
 
@@ -119,6 +131,7 @@ And this is why we build the `createReducer`!
  const reducer = createReducer()
    .when(FOO)     // no optimistic update here, just declare the parent action for .done & .failed
    .done(handler) //
+   .build()
  ```
 
 With `createReducer`, we can skip the switch-case statement which lots of people don't like it.
