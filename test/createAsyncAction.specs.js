@@ -8,7 +8,7 @@ describe('createAsyncAction', () => {
   const type = "ACTION";
 
   function invokeThunk (thunk) {
-    thunk(dispatch, getState);
+    return thunk(dispatch, getState);
   }
 
   function setDispatchForAsyncCase(assertion, done) {
@@ -69,12 +69,34 @@ describe('createAsyncAction', () => {
       const actionCreator = createAsyncAction(type, (payload, second, third) => {
         expect(second).to.equal(dispatch);
         expect(third).to.equal(getState);
+        return Promise.resolve(payload);
       });
 
       const syncPayload = {foo: 2};
       const thunk = actionCreator(syncPayload);
       invokeThunk(thunk);
-    })
+    });
+
+    it('should throw error if payloadCreator haven\'t return a promise', () => {
+      expect(() => {
+        const actionCreator = createAsyncAction(type, () => {
+          return 'not a promise'
+        });
+
+        invokeThunk(actionCreator());
+      }).to.throw(Error, 'payloadCreator should return a promise')
+    });
+
+    it('should return a promise object for invoke', () => {
+      const actionCreator = createAsyncAction(type, (payload) => {
+        return Promise.resolve(payload)
+      });
+
+      const result = invokeThunk(actionCreator());
+
+      expect(typeof result.then).to.be.equal('function');
+    });
+
   });
 
   context('when promise resolved', () => {
@@ -116,6 +138,23 @@ describe('createAsyncAction', () => {
       }, done);
 
       invokeThunk(thunk);
+    });
+
+    it('resolve the promise returned by invoke', done => {
+      dispatch = sinon.spy();
+
+      const actionCreator = createAsyncAction(type, (payload) => {
+        return Promise.resolve(payload)
+      });
+
+      const payload = {};
+
+      const result = invokeThunk(actionCreator(payload));
+
+      result.then((result) => {
+        expect(result).to.equal(payload);
+        done();
+      }).catch(e => done(e));
     })
   });
 
@@ -153,8 +192,27 @@ describe('createAsyncAction', () => {
       }, done);
 
       invokeThunk(thunk);
-    })
+    });
 
+    it('reject the promise returned by invoke', done => {
+      dispatch = sinon.spy();
+
+      const actionCreator = createAsyncAction(type, (payload) => {
+        return Promise.reject(new Error('rejected'))
+      });
+
+      const payload = {};
+
+      const result = invokeThunk(actionCreator(payload));
+
+      result.then(() => {
+        done(new Error('promise should not resolved'));
+      }, e => {
+        expect(e).to.be.instanceOf(Error);
+        expect(e.message).to.equal('rejected');
+        done();
+      }).catch(e => done(e));
+    })
   });
 
   context('when error occurs while dispatching the action for promise resolved', () => {

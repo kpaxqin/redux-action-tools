@@ -74,19 +74,34 @@ function createAsyncAction(type, payloadCreator, metaCreator) {
 
       const promise = payloadCreator(syncPayload, dispatch, getState);
 
-      if (promise && typeof promise.then === 'function') {
-        promise.then(value => {
-          dispatch(
-            completeAction(value, getAsyncMeta(metaCreator, value, ASYNC_PHASES.COMPLETED))
-          );
-        }, e => {
-          dispatch(
-            failedAction(e, getAsyncMeta(metaCreator, e, ASYNC_PHASES.FAILED))
-          );
-        });
-      }
+      invariant(
+        isPromise(promise),
+        'payloadCreator should return a promise'
+      );
+
+      return promise.then(value => {
+        dispatch(
+          completeAction(value, getAsyncMeta(metaCreator, value, ASYNC_PHASES.COMPLETED))
+        );
+        return value;
+      }, e => {
+        dispatch(
+          failedAction(e, getAsyncMeta(metaCreator, e, ASYNC_PHASES.FAILED))
+        );
+        return Promise.reject(e);
+      });
     }
   };
+}
+
+function isPromise(object) {
+  return object && typeof object.then === 'function';
+}
+
+function invariant(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
 }
 
 function ActionHandler() {
