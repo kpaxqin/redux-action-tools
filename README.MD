@@ -28,10 +28,6 @@ The `createAction` returns an action creator for pain action object, While `crea
 
 *This function should return a promise object.*
 
-The action creator returned by `createAsyncAction` receives one parameter -- the sync payload, we will dispatch a sync action same as `createAction`. And then, call the promiseCreator for the async behaviour, dispatch action for the result of it.
-
-The `dispatch` and `getState` is the same as a normal thunk action, enables you to customize your async behaviour, even dispatch other actions.
-
 Simple example below:
 
 ```js
@@ -57,7 +53,11 @@ class Foo extends Component {
 }
 ```
 
-After you dispatch the async action, following flux standard action might been triggered:
+The action creator returned by `createAsyncAction` receives one parameter -- the sync payload, we will pass it to the  `promiseCreator` as first parameter.
+
+The `dispatch` and `getState` is the same as a normal [thunk](https://github.com/gaearon/redux-thunk) action, enables you to customize your async behaviour, even dispatch other actions.
+
+After you dispatch the async action, following flux standard action will been triggered:
 
 |     type           | When         |  payload  | meta.asyncPhase    |
 | --------           |  -----      | :----:    | :----:  |
