@@ -16,18 +16,15 @@
 
 ### createAsyncAction(actionName, promiseCreator [, metaCreator])
 
-**此方法依赖redux-thunk中间件才能正常工作**.
+**此方法依赖[redux-thunk](https://github.com/gaearon/redux-thunk)中间件才能正常工作**.
 
-`createAction`方法本质上返回了一个创建纯action对象的action creator方法。
-而为了处理异步，`createAsyncAction`返回的是一个创建**thunk**的action creator。借助`redux-thunk`对thunk的处理以实现异步。
-
-第二个参数promiseCreator要求你传入一个返回promise对象的方法。使用promise表达异步逻辑是规范、易用的，并且很容易和async/await函数兼容。
+第二个参数promiseCreator必须是一个返回promise对象的方法。使用promise表达异步逻辑是规范、易用的，并且很容易和async/await函数兼容。
 
 看下面的例子:
 
 ```js
 //editTodo方法是一个返回thunk的action creator, 注意promiseCreator只能接受一个参数
-const editTodo = createAsyncAction('EDIT_TODO', function(todo) {
+const editTodo = createAsyncAction('EDIT_TODO', function(todo, dispatch, getState) {
   return todoApi.edit(todo); //todoApi.edit() should return a Promise object;
 });
 
@@ -41,6 +38,10 @@ class TodoItem extends Component {
   //...
 }
 ```
+
+第二、三个参数与thunk中的`dispatch`和`getState`相同，方便在异步过程中触发其它的action和获取应用状态。
+
+> 本质上，`createAsyncAction`返回的是一个创建**thunk**的action creator。借助`redux-thunk`对thunk的处理以实现异步。
 
 在整个过程中，如下三个action可能会被触发:
 
