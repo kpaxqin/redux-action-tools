@@ -61,18 +61,17 @@ function getAsyncMeta(metaCreator, payload, asyncPhase) {
   return asyncMetaCreator(payload, {asyncPhase});
 }
 
-function createAsyncAction(type, payloadCreator, metaCreator, takeLatest) {
+function createAsyncAction(type, payloadCreator, metaCreator) {
   const startAction = createAction(type, identity, (_, meta) => meta);
   const completeAction = createAction(`${type}_${ASYNC_PHASES.COMPLETED}`, identity, (_, meta) => meta);
   const failedAction = createAction(`${type}_${ASYNC_PHASES.FAILED}`, identity, (_, meta) => meta);
-
-  let currentReq = 0;
 
   return syncPayload => {
     return (dispatch, getState) => {
       dispatch(
         startAction(syncPayload, getAsyncMeta(metaCreator, syncPayload, ASYNC_PHASES.START))
       );
+
       const promise = payloadCreator(syncPayload, dispatch, getState);
 
       invariant(
@@ -133,7 +132,7 @@ ActionHandler.prototype = {
     this.handlers[`${this.currentAction}_${ASYNC_PHASES.FAILED}`] = handler;
     return this;
   },
-  build(initValue) {
+  build(initValue = null) {
     return (state = initValue, action) => {
       const handler = action ? this.handlers[action.type] : undefined;
 
