@@ -19,7 +19,8 @@ const reducer = createReducer()
     },
     ...state
   ])
-  .when(DELETE_TODO, (state, {payload})=> state.filter(todo =>
+  .when(DELETE_TODO)
+  .done((state, {payload})=> state.filter(todo =>
     todo.id !== payload.id
   ))
   .when(EDIT_TODO, (state, {payload})=> state.map(todo =>
