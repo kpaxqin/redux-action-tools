@@ -28,6 +28,10 @@ The `createAction` returns an action creator for pain action object, While `crea
 
 *This function should return a promise object.*
 
+The action creator returned by `createAsyncAction` receives one parameter -- the sync payload, we will dispatch a sync action same as `createAction`. And then, call the promiseCreator for the async behaviour, dispatch action for the result of it.
+
+The `dispatch` and `getState` is the same as a normal thunk action, enables you to customize your async behaviour, even dispatch other actions.
+
 Simple example below:
 
 ```js
@@ -72,6 +76,46 @@ After you dispatch the async action, following flux standard action will been tr
 
 Since the first action will be triggered before async behaviour, its easy to support optimistic update.
 
+#### meta.asyncPhase and middleware
+
+We use `meta.asyncPhase` to identity different phases.
+You can use it with middleware to handle features like global loading spinner or common error handler:
+
+```js
+import _ from 'lodash'
+import { ASYNC_PHASES } from 'redux-action-tools'
+
+export default function loadingMiddleWare({ dispatch }) {
+  return next => (action) => {
+    const asyncPhase = _.get(action, 'meta.asyncPhase');
+    const omitLoading = _.get(action, 'meta.omitLoading');
+
+    if (asyncPhase && !omitLoading) {
+      dispatch({
+        type: asyncPhase === ASYNC_PHASES.START
+          ? 'ASYNC_STARTED'
+          : 'ASYNC_ENDED',
+        payload: {
+          source: 'ACTION',
+          action,
+        },
+      });
+    }
+
+    return next(action);
+  };
+}
+
+```
+
+And with metaCreator, you can change the meta object and skip the common process:
+
+```js
+const requestWithoutLoadingSpinner = createAsyncAction(type, promiseCreator, (payload, defaultMeta) => {
+  return { ...defaultMeta, omitLoading: true };
+})
+```
+
 
 ### createReducer
 
@@ -114,43 +158,4 @@ However, there are some limitations you should know when you use `.done` and `.f
 
  ```
 
-
-### Advanced usage 
-
-#### meta.asyncPhase and middleware
-
-As you see in the table before, we use `meta.asyncPhase` to identity different phases.
-You can use it with middleware to handle features like global loading spinner or common error handler:
-
-```js
-import _ from 'lodash'
-import { ASYNC_PHASES } from 'redux-action-tools'
-
-function loadingMiddleWare({dispatch}) {
-  return next => action => {
-    const asyncStep = _.get(action, 'meta.asyncStep');
-    const omitLoading = _.get(action, 'meta.omitLoading');
-
-    if (!asyncStep || omitLoading) next(action);
-
-    dispatch({
-      type: asyncStep === ASYNC_PHASES.START ? 'ASYNC_STARTED' : 'ASYNC_ENDED',
-      payload: {
-        action
-      }
-    })
-
-    next(action);
-  }
-}
-
-```
-
-And with metaCreator, you can change the meta object and skip the common process:
-
-```js
-const requestWithoutLoadingSpinner = createAsyncAction(type, promiseCreator, (payload, defaultMeta) => {
-  return { ...defaultMeta, omitLoading: true };
-})
-```
 

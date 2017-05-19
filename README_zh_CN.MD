@@ -67,22 +67,25 @@ class TodoItem extends Component {
 import _ from 'lodash'
 import { ASYNC_PHASES } from 'redux-action-tools'
 
-function loadingMiddleWare({dispatch}) {
-  return next => action => {
-    const asyncStep = _.get(action, 'meta.asyncStep');
+export default function loadingMiddleWare({ dispatch }) {
+  return next => (action) => {
+    const asyncPhase = _.get(action, 'meta.asyncPhase');
     const omitLoading = _.get(action, 'meta.omitLoading');
 
-    if (!asyncStep || omitLoading) return;
+    if (asyncPhase && !omitLoading) {
+      dispatch({
+        type: asyncPhase === ASYNC_PHASES.START
+          ? 'ASYNC_STARTED'
+          : 'ASYNC_ENDED',
+        payload: {
+          source: 'ACTION',
+          action,
+        },
+      });
+    }
 
-    dispatch({
-      type: asyncStep === ASYNC_PHASES.START ? 'ASYNC_STARTED' : 'ASYNC_ENDED',
-      payload: {
-        action
-      }
-    })
-
-    next(action);
-  }
+    return next(action);
+  };
 }
 
 ```
